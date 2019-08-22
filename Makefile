@@ -4,8 +4,8 @@ CFLAGS  = -g -ansi -std=c11 -Wall -I/usr/X11R6/include -I/usr/pkg/include
 LDFLAGS = -L/usr/X11R6/lib -L/usr/pkg/lib
 LDLIBS  = -lglut -lGLU -lGL -lm
 
-$(PROGRAM): mat_lav.o image.o 
-	$(CC) $(LDFLAGS) -o $(PROGRAM) mat_lav.o image.o $(LDLIBS)
+$(PROGRAM): mat_lav.o image.o labyrinth.o
+	$(CC) $(LDFLAGS) -o $(PROGRAM) mat_lav.o image.o labyrinth.o $(LDLIBS)
 
 .PHONY: clean dist
 
