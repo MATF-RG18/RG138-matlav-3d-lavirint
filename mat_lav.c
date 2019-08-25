@@ -465,7 +465,7 @@ void on_display(void)
 	
 	if (z<= -162)
 	{
-		printf("Uspesno ste izasli iz lavirinta! :D\n");
+		printf("You have successfully found the way out of the labyrinth! :D\n");
 		exit(EXIT_SUCCESS);
 	}
 	
