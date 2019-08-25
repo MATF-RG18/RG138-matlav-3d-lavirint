@@ -135,7 +135,7 @@ void processNormalKeys(unsigned char key, int x_f, int y_f)
 void processSpecialKeys(int key, int xx, int yy)
 {
 
-	float fraction = 0.5f; //bilo je 0.1f
+	float fraction = 0.1f;
 
 	switch (key)
 	{
