@@ -6,7 +6,12 @@
 #include"labyrinth.h"
 
 #define FILENAME0 "Tileable_marble_floor_tile_texture(16).bmp"
-#define FILENAME1 "metal_seamless_texture_43_by_jojo_ojoj-d8qm8o9.bmp"
+#define FILENAME1 "prvo_pitanje.bmp"
+#define FILENAME2 "drugo_pitanje.bmp"
+#define FILENAME3 "trece_pitanje.bmp"
+#define FILENAME4 "cetvrto_pitanje.bmp"
+#define STOP 1
+#define MOVE 0
 
 //matrica rotacije
 static float matrix[16];
@@ -18,6 +23,8 @@ float angle=0.0;
 float lx=0.0f,lz=-1.0f;
 // XZ position of the camera
 float x=0.0f,z=5.0f;
+char move_trigger = MOVE;
+char q_counter = 0;
 
 void on_display(void);
 void changeSize(int w, int h);
@@ -49,19 +56,79 @@ int main(int argc, char **argv)
 	
 //inicijalizacija
 	initialize();
+	
+	printf("Game rules:\n");
+    printf("Right answers give you a hit which way to go,\n");
+    printf("to find the right path to exit the labyrinth.\n");
+    printf("If the correct answer is (l) you should turn left,\n");
+    printf("if it's (f) you should continue your path ahead, and if it's (r),\n");
+    printf("you should turn right.\n");
 
 	glutMainLoop();
 
 	return 0;
 }
 
-void processNormalKeys(unsigned char key, int x, int y)
+void processNormalKeys(unsigned char key, int x_f, int y_f)
 {
 
 	if (key == 27)
 	{
 		glDeleteTextures(2, names);
 		exit(0);
+	}
+	
+	if (key == 'z')
+	{
+		printf("%f\n",z+lz);
+	}
+	if (key == 'x')
+	{
+		printf("%f\n",x);
+	}
+	
+	if (key == 'r')
+	{
+		if (q_counter == 1 || q_counter == 3 || q_counter == 2)
+		{
+			printf("Wrong answer! You're now dead! :( Good luck in resurrection.");
+			exit(EXIT_SUCCESS);
+		}
+		else if (q_counter == 4)
+		{
+			move_trigger = MOVE;
+			x -= 0.6;
+		}
+	}
+	
+	if (key == 'f')
+	{
+		if (q_counter == 1)
+		{
+			move_trigger = MOVE;
+			z -= 0.6;
+		}
+		
+		else if (q_counter == 2 || q_counter == 4 || q_counter == 3)
+		{
+			printf("Wrong answer! You're now dead! :( Good luck in resurrection.");
+			exit(EXIT_SUCCESS);
+		}
+	}
+	
+	if (key == 'l')
+	{
+		if (q_counter == 1 || q_counter == 4)
+		{
+			printf("Wrong answer! You're now dead! :( Good luck in resurrection.");
+			exit(EXIT_SUCCESS);
+		}
+		else if (q_counter == 2 || q_counter == 3)
+		{
+			move_trigger = MOVE;
+			x += 0.6;
+		}
+
 	}
 }
 
@@ -73,22 +140,35 @@ void processSpecialKeys(int key, int xx, int yy)
 	switch (key)
 	{
 		case GLUT_KEY_LEFT :
-			angle -= 0.01f;
-			lx = sin(angle);
-			lz = -cos(angle);
+			if (move_trigger != STOP)
+			{
+				angle -= 0.01f;
+				lx = sin(angle);
+				lz = -cos(angle);
+			}
+			
 			break;
 		case GLUT_KEY_RIGHT :
-			angle += 0.01f;
-			lx = sin(angle);
-			lz = -cos(angle);
+			if (move_trigger != STOP)
+			{
+				angle += 0.01f;
+				lx = sin(angle);
+				lz = -cos(angle);
+			}
 			break;
 		case GLUT_KEY_UP :
-			x += lx * fraction;
-			z += lz * fraction;
+			if (move_trigger != STOP)
+			{
+				x += lx * fraction;
+				z += lz * fraction;
+			}
 			break;	
 		case GLUT_KEY_DOWN :
-			x -= lx * fraction;
-			z -= lz * fraction;
+			if (move_trigger != STOP)
+			{
+				x -= lx * fraction;
+				z -= lz * fraction;
+			}
 			break;
 	}
 }
@@ -115,7 +195,7 @@ static void initialize(void)
     image_read(image, FILENAME0);
 
     // Generisanje identifikatora tekstura.
-    glGenTextures(2, names);
+    glGenTextures(5, names);
 
     glBindTexture(GL_TEXTURE_2D, names[0]);
     glTexParameteri(GL_TEXTURE_2D,
@@ -128,16 +208,65 @@ static void initialize(void)
                  image->width, image->height, 0,
                  GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
 
-    /* Kreira se druga tekstura. */
+    // Kreira se druga tekstura.
     image_read(image, FILENAME1);
 
     glBindTexture(GL_TEXTURE_2D, names[1]);
     glTexParameteri(GL_TEXTURE_2D,
-                    GL_TEXTURE_WRAP_S, GL_REPEAT);
+                    GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_2D,
-                    GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                    GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                 image->width, image->height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+                 
+     image_read(image, FILENAME2);
+
+    glBindTexture(GL_TEXTURE_2D, names[2]);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                 image->width, image->height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+    
+    
+    image_read(image, FILENAME3);
+
+    glBindTexture(GL_TEXTURE_2D, names[3]);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+                 image->width, image->height, 0,
+                 GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
+                 
+                 
+    image_read(image, FILENAME4);
+
+    glBindTexture(GL_TEXTURE_2D, names[4]);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
                  image->width, image->height, 0,
                  GL_RGB, GL_UNSIGNED_BYTE, image->pixels);
@@ -154,18 +283,127 @@ static void initialize(void)
     glGetFloatv(GL_MODELVIEW_MATRIX, matrix);
 }
 
+void question()
+{
+	//Prvo pitanje.
+	if (z<= -52.0 && z> -52.5)
+	{
+		move_trigger = STOP;
+		
+		glPushMatrix();	
+		glBindTexture(GL_TEXTURE_2D, names[1]);
+			glBegin(GL_QUADS);
+							
+				
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex3f(x+lx+1.5, 3.0f, z+lz-4.2);
+			
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex3f(x+lx+1.5, 0.0f, z+lz-4.2);
+			
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex3f(x+lx-1.5, 0.0f, z+lz-4.0);
+				
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex3f(x+lx-1.5, 3.0f, z+lz-4.0);
+				
+			glEnd();
+		glBindTexture(GL_TEXTURE_2D, 0);		
+	glPopMatrix();	
+	q_counter = 1;
+	}
+	
+	//Drugo pitanje.
+	if(x >=-5.0 && x <= -4.5 && z<=-86.0 && z >= -88.0)
+	{
+		move_trigger = STOP;
+		glPushMatrix();
+	// Postavljanje pitanja.
+		glBindTexture(GL_TEXTURE_2D, names[2]);
+			glBegin(GL_QUADS);
+							
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex3f(x+lx+4.0, 3.0f, z+lz-1.5);
+			
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex3f(x+lx+4.0, 3.0f, z+lz+1.5);
+			
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex3f(x+lx+4.0, 0.0f, z+lz+1.5);
+			
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex3f(x+lx+4.0, 0.0f, z+lz-1.5);
+			
+			glEnd();
+		glBindTexture(GL_TEXTURE_2D, 0);		
+		glPopMatrix();	
+		q_counter = 2;
+	}
+	
+	//Trece pitanje.
+	if(x >=22.0 && x <= 22.5 && z<=-113.0 && z >= -118.0)
+	{
+		move_trigger = STOP;
+		glPushMatrix();
+		glBindTexture(GL_TEXTURE_2D, names[3]);
+			glBegin(GL_QUADS);
+							
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex3f(x+lx+4.0, 3.0f, z+lz-1.5);
+			
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex3f(x+lx+4.0, 3.0f, z+lz+1.5);
+			
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex3f(x+lx+4.0, 0.0f, z+lz+1.5);
+			
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex3f(x+lx+4.0, 0.0f, z+lz-1.5);
+			
+			glEnd();
+		glBindTexture(GL_TEXTURE_2D, 0);		
+		glPopMatrix();	
+		q_counter = 3;
+	}
+	
+	//Cetvrto pitanje.
+	if(x >=7.0 && x <= 7.5 && z>=-148.0 && z <= -143.0)
+	{
+		move_trigger = STOP;
+		glPushMatrix();
+		glBindTexture(GL_TEXTURE_2D, names[4]);
+			glBegin(GL_QUADS);
+							
+				glTexCoord2f(1.0f, 1.0f);
+				glVertex3f(x+lx-4.0, 3.0f, z+lz-1.5);
+			
+				glTexCoord2f(0.0f, 1.0f);
+				glVertex3f(x+lx-4.0, 3.0f, z+lz+1.5);
+			
+				glTexCoord2f(0.0f, 0.0f);
+				glVertex3f(x+lx-4.0, 0.0f, z+lz+1.5);
+			
+				glTexCoord2f(1.0f, 0.0f);
+				glVertex3f(x+lx-4.0, 0.0f, z+lz-1.5);
+			
+			glEnd();
+		glBindTexture(GL_TEXTURE_2D, 0);		
+		glPopMatrix();	
+		q_counter = 4;
+	}
+	
+}
 
 void on_display(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 // Postavljanje kamere.
-	gluLookAt( x, 1.0f, z,x+lx, 1.0f, z+lz,0.0f, 1.0f, 0.0f);
+	gluLookAt(x, 1.0f, z,x+lx, 1.0f, z+lz,0.0f, 1.0f, 0.0f);
 	
 // Primenjuje se matrica rotacije.
     glMultMatrixf(matrix);
     glClearColor(0.7,0.5,0.0,0);
-    
     
  	GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
     GLfloat light_ambient[] = { 0.0, 0.0, 0.0, 1 };
@@ -205,7 +443,7 @@ void on_display(void)
 	// Postavljanje teksture poda.
 	glBindTexture(GL_TEXTURE_2D, names[0]);
 		glBegin(GL_QUADS);
-			glNormal3f(0, 0, 1);
+			//glNormal3f(0, 0, 1);
 			
 			glTexCoord2f(-50, -50);
 			glVertex3f(-200.0f, 0.0f, -200.0f);
@@ -223,6 +461,13 @@ void on_display(void)
 	
 	glPopMatrix();
 	
+	question();
+	
+	if (z<= -162)
+	{
+		printf("Uspesno ste izasli iz lavirinta! :D\n");
+		exit(EXIT_SUCCESS);
+	}
 	
 	glutSwapBuffers();
 }
